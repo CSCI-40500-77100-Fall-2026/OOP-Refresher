@@ -487,7 +487,7 @@ classDiagram
 | `Notify()` calls `Update()` on each observer | Dynamic dispatch. |
 
 ::: notes
-This is the UML model from the Design Patterns lecture, redrawn: `Notify()` runs "for all o in observers: o->Update()", and `ConcreteObserver::Update()` sets `observerState = subject->GetState()`. The asterisks mark abstract methods.
+This is the UML model of the pattern from Sommerville's *Software Engineering*, redrawn: `Notify()` runs "for all o in observers: o->Update()", and `ConcreteObserver::Update()` sets `observerState = subject->GetState()`. The asterisks mark abstract methods.
 
 The point to make: nothing in this diagram is new. Each part is one of the features from today. `Notify()` is written once, in `Subject`, against the abstract `Observer`; dynamic dispatch makes each call run the right `ConcreteObserver`'s `Update()`.
 
