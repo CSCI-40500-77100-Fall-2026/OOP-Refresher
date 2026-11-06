@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use these materials, please cite them as below."
+title: "Object-Oriented Programming Refresher"
+type: dataset
+authors:
+  - family-names: Khatchadourian
+    given-names: Raffi
+    affiliation: "City University of New York (CUNY) Hunter College"
+    email: khatchad@hunter.cuny.edu
+license: CC-BY-SA-4.0
+repository-code: "https://github.com/CSCI-40500-77100-Fall-2026/OOP-Refresher"
+url: "https://cs.hunter.cuny.edu/~khatchad/media/oop_refresher"
+keywords:
+  - object-oriented programming
+  - inheritance
+  - polymorphism
+  - abstract classes
+  - interfaces
+  - Python
+  - C++
+  - software engineering

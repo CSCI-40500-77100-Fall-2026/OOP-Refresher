@@ -1,0 +1,211 @@
+<meta name="dcterms.license" content="https://creativecommons.org/licenses/by-sa/4.0/">
+<meta name="dcterms.source" content="https://github.com/CSCI-40500-77100-Fall-2026/OOP-Refresher">
+<style>
+  /* Tables: borders, header band, zebra rows, LEFT-aligned (matches body) */
+  table { border-collapse: collapse; margin: 1em 0; }
+  table th, table td {
+    border: 1px solid #ccc;
+    padding: 0.4em 0.8em;
+    vertical-align: top;
+  }
+  table th { background-color: #ececec; font-weight: bold; }
+  table tr:nth-child(even) td { background-color: #fafafa; }
+
+  /* Blockquotes: pronounced left-bar callout (no background fill, so
+     it doesn't clash with the code-block tint). Italic by slidy default;
+     inline `*emphasis*` reverts to upright for contrast. */
+  blockquote {
+    border-left: 4px solid #4a90d9;
+    padding: 0.4em 0.9em;
+    margin: 1em 0;
+  }
+  blockquote em, blockquote i { font-style: normal; }
+
+  /* Figures and pandoc's .float container (used when an image has a
+     caption) — center both the image and its caption. */
+  figure, .float { text-align: center; }
+  figcaption, .figcaption {
+    font-size: 0.85em;
+    color: #555;
+    font-style: italic;
+    margin-top: 0.3em;
+  }
+
+  /* Code blocks. max-height keeps long listings from pushing later
+     slide content off the bottom of the viewport — slidy scales by
+     width only, so vertical overflow has to be capped here. */
+  pre {
+    background-color: #f6f8fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 0.5em 0.8em;
+    max-height: 70vh;
+    overflow: auto;
+  }
+
+  /* Cap image height so a width=100% image still respects the slide's
+     vertical space on wide/short displays (e.g. classroom 16:9 TVs).
+     Without this, tall images push following content off the slide. */
+  img { max-width: 100%; max-height: calc(65vh * var(--fit, 1)); height: auto; }
+  figure img, .float img { max-height: calc(58vh * var(--fit, 1)); }   /* leave room for caption */
+  code {
+    background-color: #f0f0f0;
+    padding: 0 0.25em;
+    border-radius: 3px;
+  }
+  pre > code { background: none; padding: 0; }
+
+  /* Citeproc bibliography: hanging-indent style (first line flush,
+     wrapped lines indented) is the bibliography convention but pandoc
+     only emits the class hint; we have to supply the CSS. */
+  .csl-bib-body.hanging-indent .csl-entry {
+    padding-left: 2em;
+    text-indent: -2em;
+    margin-bottom: 0.6em;
+  }
+
+  /* Mobile-only floating "Contents" button. Slidy suppresses its own
+     toolbar on touch devices (keyboardless mode → want_toolbar=0), so
+     the built-in "contents?" link isn't reachable on phones. Give
+     mobile users an explicit affordance instead. */
+  .slidy-toc-button {
+    display: none;
+    position: fixed;
+    top: 0.5em;
+    right: 0.5em;
+    z-index: 400;
+    background: rgba(74, 144, 217, 0.9);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 0.4em 0.7em;
+    font-size: 1.2em;
+    font-family: inherit;
+    cursor: pointer;
+  }
+  @media (hover: none) and (pointer: coarse) {
+    .slidy-toc-button { display: block; }
+  }
+
+  /* License/attribution notice on the title slide, so the standalone HTML
+     carries its license even when separated from the repo and LICENSE.md.
+     Injected by the script below because the slidy template has no license
+     field. */
+  .titlepage .license-notice {
+    margin-top: 2em;
+    font-size: 0.6em;
+    color: #555;
+  }
+  .titlepage .license-notice a { color: #4a90d9; }
+</style>
+
+<script>
+  // Mobile touch fix. Slidy's per-slide touchmove calls preventDefault
+  // (blocks native scrolling) and its touchend maps a vertical swipe to
+  // "toggle TOC" — so on phones, any slide taller than the viewport is
+  // unscrollable, and trying to scroll opens the table of contents.
+  //
+  // We can't undo slidy's listeners (they're bound by reference at init),
+  // so we install document-level capture-phase listeners that fire first
+  // and stopPropagation — slidy's per-slide handlers never see the event.
+  // Horizontal swipe still advances; vertical drag falls through to the
+  // browser's native scroll.
+  window.addEventListener("load", () => {
+    if (typeof w3c_slidy === "undefined") return;
+
+    // Inject a mobile-only Contents button (hidden by CSS on desktop).
+    const btn = document.createElement("button");
+    btn.className = "slidy-toc-button";
+    btn.textContent = "☰";
+    btn.setAttribute("aria-label", "Table of contents");
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      w3c_slidy.toggle_table_of_contents();
+    });
+    document.body.appendChild(btn);
+    const onButton = (e) => e.target.closest(".slidy-toc-button");
+
+    let startX = 0, startY = 0, startT = 0;
+    document.addEventListener("touchstart", (e) => {
+      if (e.touches.length !== 1 || onButton(e)) return;
+      e.stopPropagation();
+      startX = e.touches[0].pageX;
+      startY = e.touches[0].pageY;
+      startT = Date.now();
+    }, { capture: true, passive: true });
+    document.addEventListener("touchmove", (e) => {
+      if (e.touches.length !== 1 || onButton(e)) return;
+      e.stopPropagation();
+    }, { capture: true, passive: true });
+    document.addEventListener("touchend", (e) => {
+      if (e.changedTouches.length !== 1 || onButton(e)) return;
+      e.stopPropagation();
+      const dx = e.changedTouches[0].pageX - startX;
+      const dy = e.changedTouches[0].pageY - startY;
+      if (Date.now() - startT > 600) return;
+      if (Math.abs(dx) < 80) return;
+      if (Math.abs(dx) < 2 * Math.abs(dy)) return;
+      if (dx < 0) w3c_slidy.next_slide(true);
+      else w3c_slidy.previous_slide(true);
+    }, { capture: true, passive: true });
+  });
+</script>
+
+<script>
+  // Stamp a license/attribution line onto the title slide. Kept here (not in
+  // the Markdown) because Pandoc's slidy template renders no license field;
+  // this way the notice rides along with the self-contained HTML. The source
+  // URL is read from the dcterms.source meta tag, so this snippet is identical
+  // across decks. Title and author are already shown above it (TASL).
+  window.addEventListener("DOMContentLoaded", () => {
+    const cover = document.querySelector(".titlepage");
+    if (!cover || cover.querySelector(".license-notice")) return;
+    const licenseUrl = "https://creativecommons.org/licenses/by-sa/4.0/";
+    const p = document.createElement("p");
+    p.className = "license-notice";
+    p.innerHTML = 'Licensed under <a rel="license" href="' + licenseUrl + '">CC BY-SA 4.0</a>';
+    const src = document.querySelector('meta[name="dcterms.source"]');
+    if (src && src.content) {
+      const host = src.content.replace(/^https?:\/\//, "");
+      p.innerHTML += ' · Source: <a href="' + src.content + '">' + host + '</a>';
+    }
+    cover.appendChild(p);
+  });
+</script>
+
+<script>
+  // Fit each slide to the window. Slidy picks one font size from the window
+  // width (20pt at 1100px and up), so on shorter screens (e.g., a 1280x720
+  // projector) long slides run past the bottom. Each time slidy shows a slide
+  // (it also re-shows the current one on resize), shrink that slide's text and
+  // images together, in 5% steps, until it fits above the toolbar, but never
+  // below 75%, so text stays readable. Every slidy code path shows slides
+  // through w3c_slidy.show_slide, so wrapping it covers navigation, the table
+  // of contents, and resizing.
+  window.addEventListener("load", () => {
+    if (typeof w3c_slidy === "undefined") return;
+    const MIN = 0.75, STEP = 0.05;
+    const bottomOf = (slide) => {
+      let bottom = 0;
+      for (const el of slide.children) bottom = Math.max(bottom, el.getBoundingClientRect().bottom);
+      return bottom;
+    };
+    const fit = (slide) => {
+      slide.style.fontSize = "";
+      slide.style.removeProperty("--fit");
+      if (slide.classList.contains("titlepage")) return;
+      const bar = w3c_slidy.toolbar;
+      const room = window.innerHeight - (bar && bar.offsetHeight ? bar.offsetHeight : 0);
+      for (let f = 1 - STEP; bottomOf(slide) > room && f >= MIN - 1e-9; f -= STEP) {
+        slide.style.fontSize = Math.round(f * 100) + "%";
+        slide.style.setProperty("--fit", f);
+      }
+    };
+    const show = w3c_slidy.show_slide;
+    w3c_slidy.show_slide = function (slide) {
+      show.call(this, slide);
+      fit(slide);
+    };
+    fit(w3c_slidy.slides[w3c_slidy.slide_number]);
+  });
+</script>

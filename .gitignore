@@ -1,0 +1,6 @@
+*.html
+!header.html
+plantuml-images
+*.swp
+/dist/
+mermaid-filter.err
