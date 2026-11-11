@@ -37,11 +37,14 @@ About 20 minutes. This covers exactly what the Observer Pattern assignment needs
 ```python
 class Rectangle:
     def __init__(self, height, width):
-        self.height = height
-        self.width = width
+        self._height = height
+        self._width = width
 
     def area(self):
-        return self.height * self.width
+        return self._height * self._width
+
+    def set_width(self, width):
+        self._width = width
 
 r = Rectangle(1.0, 3.6)
 print(r.area())  # 3.6
@@ -60,6 +63,8 @@ public:
     double area() const {
         return height * width;
     }
+    void set_width(double w) { width = w; }
+private:
     double height, width;
 };
 
@@ -79,6 +84,8 @@ A method runs on a particular object, the *receiver*. Python passes the receiver
 
 `const` after a C++ method promises the method does not change the object.
 
+The fields are *private*: only the class's own methods can use them, and other code goes through methods such as `set_width()`. This is *encapsulation*: the class controls how its data changes, so it can check or adjust each change in one place. C++ and Java enforce it with `private`. Python has no `private`; a leading underscore (`_width`) is the convention for "internal: don't use this from outside the class."
+
 Java is like C++ here, except that objects are always created with `new`: `Rectangle r = new Rectangle(1.0, 3.6);`.
 :::
 
@@ -91,9 +98,9 @@ Java is like C++ here, except that objects are always created with `new`: `Recta
 
 ```python
 a = Rectangle(1.0, 3.6)
-c = a           # same object
-c.width = 5.0
-print(a.width)  # 5.0
+c = a             # same object
+c.set_width(5.0)
+print(a.area())   # 5.0
 ```
 
 * Variables *refer* to objects.
@@ -106,11 +113,11 @@ print(a.width)  # 5.0
 
 ```cpp
 Rectangle a(1.0, 3.6);
-Rectangle c = a;    // a copy
-c.width = 5.0;      // a.width is 3.6
-Rectangle& r = a;   // another name for a
-Rectangle* p = &a;  // the address of a
-r.width = 5.0;      // a.width is 5.0
+Rectangle c = a;     // a copy
+c.set_width(5.0);    // a.area() is 3.6
+Rectangle& r = a;    // another name for a
+Rectangle* p = &a;   // the address of a
+r.set_width(5.0);    // a.area() is 5.0
 ```
 
 * Variables *hold* objects.
@@ -124,7 +131,7 @@ r.width = 5.0;      // a.width is 5.0
 ::: notes
 Two names for one object is called *aliasing*. In Python (and in Java, where variables of class type are references), aliasing is the default. In C++, a variable of class type is the object itself, so `Rectangle c = a;` copies every field.
 
-A C++ *reference* (`Rectangle&`) is another name for an existing object; it cannot be reseated. A *pointer* (`Rectangle*`) holds an object's address and can be changed or be `nullptr`; use `->` to reach members through it (`p->width`).
+A C++ *reference* (`Rectangle&`) is another name for an existing object; it cannot be reseated. A *pointer* (`Rectangle*`) holds an object's address and can be changed or be `nullptr`; use `->` to reach members through it (`p->set_width(5.0)`).
 
 This matters for the Observer assignment: a subject keeps a list of *its* observers. In C++, that list must hold pointers (or references), not copies; otherwise, updating the list's copies does not update the real observers.
 :::
@@ -141,8 +148,8 @@ class Rectangle:
     count = 0  # one copy, shared
 
     def __init__(self, height, width):
-        self.height = height  # one per object
-        self.width = width
+        self._height = height  # one per object
+        self._width = width
         Rectangle.count += 1
 ```
 
@@ -159,6 +166,7 @@ public:
         : height(height), width(width) {
         ++count;
     }
+private:
     double height, width;  // one per object
 };
 ```
